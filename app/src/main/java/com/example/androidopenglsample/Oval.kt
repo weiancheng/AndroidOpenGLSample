@@ -3,12 +3,15 @@ package com.example.androidopenglsample
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
+import android.util.Log
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.log
 import kotlin.math.sin
 
 class Oval(): GLSurfaceView.Renderer {
@@ -40,7 +43,7 @@ class Oval(): GLSurfaceView.Renderer {
 
     init {
         shapePos = createPosition()
-        vertexBuffer = (ByteBuffer.allocateDirect(shapePos.size.minus(4))).asFloatBuffer()
+        vertexBuffer = (ByteBuffer.allocateDirect(shapePos.size*4)).order(ByteOrder.nativeOrder()).asFloatBuffer()
         vertexBuffer.put(shapePos)
         vertexBuffer.position(0)
         val vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode)
@@ -74,7 +77,9 @@ class Oval(): GLSurfaceView.Renderer {
         }
 
         val f = FloatArray(data.size)
-        for (i in 0..f.size step 1) {
+        Log.i("Weian", "f.size: ${f.size}, data.size: ${data.size}")
+        for (i in 0..(f.size-1)) {
+            Log.i("Weian", "i: $i")
             f[i] = data[i]
         }
 
@@ -82,7 +87,10 @@ class Oval(): GLSurfaceView.Renderer {
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
-        val ratio = (width/height).toFloat()
+        GLES20.glViewport(0, 0, width, height)
+
+        val ratio = width.toFloat().div(height.toFloat())
+        Log.i("Weian", "width: $width, height: $height, ratio: $ratio")
         Matrix.frustumM(projectMatrix, 0, -ratio, ratio, -1f, 1f, 3f, 7f)
 
         Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 7f, 0f, 0f, 0f, 0f, 1f, 0f)
@@ -91,9 +99,12 @@ class Oval(): GLSurfaceView.Renderer {
     }
 
     override fun onSurfaceCreated(gl: GL10?, eglConfig: EGLConfig?) {
+        GLES20.glClearColor(0.5f, 0.5f, 0.5f, 0.5f)
     }
 
     override fun onDrawFrame(gl: GL10?) {
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
+
         GLES20.glUseProgram(program)
 
         matrixHandle = GLES20.glGetUniformLocation(program, "vMatrix")
