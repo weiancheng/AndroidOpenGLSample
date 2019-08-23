@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AndroidOpenGLSample</string>
+    <string name="title_activity_fgl">FGLActivity</string>
 </resources>
